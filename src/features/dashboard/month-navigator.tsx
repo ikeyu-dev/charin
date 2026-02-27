@@ -46,16 +46,15 @@ export function MonthNavigator({ year, month }: MonthNavigatorProps) {
             >
                 &gt;
             </Button>
-            {!isCurrentMonth && (
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => router.push("/")}
-                    className="h-7 text-xs"
-                >
-                    今月
-                </Button>
-            )}
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/")}
+                className="h-7 text-xs"
+                disabled={isCurrentMonth}
+            >
+                今月
+            </Button>
         </div>
     );
 }
