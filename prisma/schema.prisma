@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+/// バイト先の定義
+model Job {
+  id                  String   @id @default(cuid())
+  name                String   @unique
+  hourlyWage          Int?
+  defaultTransportFee Int?
+  isOneTime           Boolean  @default(false)
+  description         String?
+  color               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  shifts              Shift[]
+}
+
+/// カレンダーから取得したバイト予定
+model Shift {
+  id              String   @id @default(cuid())
+  calendarEventId String
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id])
+  title           String
+  startTime       DateTime
+  endTime         DateTime
+  entryStatus     String   @default("PENDING")
+  entry           Entry?
+  syncedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([calendarEventId, startTime])
+}
+
+/// 勤務時間/収入の入力データ
+model Entry {
+  id           String    @id @default(cuid())
+  shiftId      String    @unique
+  shift        Shift     @relation(fields: [shiftId], references: [id])
+  entryType    String
+  clockIn      String?
+  breakStart   String?
+  breakEnd     String?
+  clockOut     String?
+  breakMinutes     Int?
+  workMinutes      Int?
+  lateNightMinutes Int?
+  income       Int?
+  transportFee Int?
+  note         String?
+  expenses     Expense[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+/// 経費（1つのEntryに複数紐づけ可能）
+model Expense {
+  id        String   @id @default(cuid())
+  entryId   String
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  name      String
+  amount    Int
+  createdAt DateTime @default(now())
+}
