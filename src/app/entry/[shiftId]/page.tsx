@@ -5,11 +5,7 @@ import { EntryForm } from "@/features/entry/entry-form";
 import type { EntryInitialData } from "@/features/entry/entry-form";
 import { EntryActions } from "@/features/entry/entry-actions";
 import { BackButton } from "@/components/back-button";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Briefcase, Calendar, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
 
@@ -77,7 +73,9 @@ export default async function EntryPage({
                 <CardHeader>
                     <div className="flex items-center gap-2">
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <p className="text-lg font-semibold">{shift.job.name}</p>
+                        <p className="text-lg font-semibold">
+                            {shift.job.name}
+                        </p>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -103,7 +101,9 @@ export default async function EntryPage({
             {isCompleted && !isEditMode ? (
                 <Card>
                     <CardContent className="pt-6">
-                        <p className="text-sm text-muted-foreground">入力済み</p>
+                        <p className="text-sm text-muted-foreground">
+                            入力済み
+                        </p>
                         <p className="mt-1 text-2xl font-bold tabular-nums">
                             &yen;{formatCurrency(shift.entry!.income ?? 0)}
                         </p>

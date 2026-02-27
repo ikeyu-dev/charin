@@ -8,7 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/shared/lib/format";
 import { updateJob, deleteJob } from "@/actions/job";
-import { Wallet, TrendingUp, CheckCircle2, Clock, ChevronDown } from "lucide-react";
+import {
+    Wallet,
+    TrendingUp,
+    CheckCircle2,
+    Clock,
+    ChevronDown,
+} from "lucide-react";
 
 interface JobCardProps {
     jobId: string;
@@ -132,7 +138,9 @@ export function JobCard({
                     <div className="p-6">
                         <div className="flex items-center gap-1.5">
                             <Wallet className="h-3 w-3 text-muted-foreground" />
-                            <p className="text-xs text-muted-foreground">今月</p>
+                            <p className="text-xs text-muted-foreground">
+                                今月
+                            </p>
                         </div>
                         <p className="mt-1 text-xl font-bold tabular-nums">
                             &yen;{formatCurrency(monthlyTotal)}
@@ -141,7 +149,9 @@ export function JobCard({
                     <div className="p-6">
                         <div className="flex items-center gap-1.5">
                             <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                            <p className="text-xs text-muted-foreground">年間</p>
+                            <p className="text-xs text-muted-foreground">
+                                年間
+                            </p>
                         </div>
                         <p className="mt-1 text-xl font-bold tabular-nums">
                             &yen;{formatCurrency(yearlyTotal)}

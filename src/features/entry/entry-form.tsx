@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createEntry, updateEntry } from "@/actions/entry";
 import { formatCurrency, formatMinutesToHours } from "@/shared/lib/format";
-import { Clock, Banknote, Bus, Receipt, StickyNote } from "lucide-react";
+import { Bus, Receipt, StickyNote } from "lucide-react";
 import {
     timeToMinutes,
     calcLateNightMinutes,

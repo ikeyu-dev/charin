@@ -3,12 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { NavLink } from "@/components/nav-link";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import {
-    LayoutDashboard,
-    Calendar,
-    Briefcase,
-    BarChart3,
-} from "lucide-react";
+import { LayoutDashboard, Calendar, Briefcase, BarChart3 } from "lucide-react";
 import "./globals.css";
 
 const geistSans = Geist({

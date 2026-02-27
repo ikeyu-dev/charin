@@ -1,11 +1,7 @@
 import { prisma } from "@/shared/lib/prisma";
 import { formatCurrency } from "@/shared/lib/format";
 import { getStartOfFiscalYear, getEndOfFiscalYear } from "@/shared/lib/date";
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
     Table,
     TableBody,
@@ -111,13 +107,11 @@ export default async function ReportPage() {
         });
 
     // バイト先別構成比グラフ用データ
-    const jobRatioData = Object.entries(jobTotals).map(
-        ([name, total], i) => ({
-            name,
-            total,
-            fill: CHART_COLORS[i % CHART_COLORS.length],
-        })
-    );
+    const jobRatioData = Object.entries(jobTotals).map(([name, total], i) => ({
+        name,
+        total,
+        fill: CHART_COLORS[i % CHART_COLORS.length],
+    }));
 
     return (
         <div className="space-y-10">

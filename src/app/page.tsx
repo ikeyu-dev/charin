@@ -151,9 +151,7 @@ export default async function DashboardPage({
         const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
         const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1);
         const income = completedFiscal
-            .filter(
-                (s) => s.startTime >= monthStart && s.startTime < monthEnd
-            )
+            .filter((s) => s.startTime >= monthStart && s.startTime < monthEnd)
             .reduce((sum, s) => {
                 if (!s.entry) return sum;
                 return sum + calcEntryTotal(s.entry);
