@@ -2,6 +2,11 @@ import { prisma } from "@/shared/lib/prisma";
 import { formatCurrency } from "@/shared/lib/format";
 import { getStartOfFiscalYear, getEndOfFiscalYear } from "@/shared/lib/date";
 import {
+    Card,
+    CardContent,
+    CardHeader,
+} from "@/components/ui/card";
+import {
     Table,
     TableBody,
     TableCell,
@@ -10,6 +15,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { YearlyChart } from "@/features/report/yearly-chart";
+import { JobRatioChart } from "@/features/report/job-ratio-chart";
+import { Coins, Briefcase } from "lucide-react";
 
 /** 年度内の月を12月始まりの順序で並べる（12, 1, 2, ..., 11） */
 const FISCAL_MONTHS = [11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
@@ -28,6 +36,14 @@ const MONTH_NAMES = [
     "11月",
     "12月",
 ] as const;
+
+const CHART_COLORS = [
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+];
 
 /**
  * 収入レポート画面
@@ -83,6 +99,26 @@ export default async function ReportPage() {
         return { key, label };
     });
 
+    // 年間月別推移グラフ用データ
+    const yearlyChartData = fiscalMonthEntries
+        .filter(({ key }) => monthlyData[key])
+        .map(({ key, label }) => {
+            const row: Record<string, string | number> = { month: label };
+            for (const name of jobNames) {
+                row[name] = monthlyData[key][name] ?? 0;
+            }
+            return row;
+        });
+
+    // バイト先別構成比グラフ用データ
+    const jobRatioData = Object.entries(jobTotals).map(
+        ([name, total], i) => ({
+            name,
+            total,
+            fill: CHART_COLORS[i % CHART_COLORS.length],
+        })
+    );
+
     return (
         <div className="space-y-10">
             <div>
@@ -99,28 +135,75 @@ export default async function ReportPage() {
                 <h2 className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
                     年間合計
                 </h2>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    <div className="rounded-xl border p-6">
-                        <p className="text-sm text-muted-foreground">合計</p>
-                        <p className="mt-1 text-3xl font-bold tabular-nums">
-                            &yen;{formatCurrency(yearTotal)}
-                        </p>
-                    </div>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <Card className="transition-shadow hover:shadow-md">
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Coins className="h-4 w-4 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                    合計
+                                </p>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-3xl font-bold tabular-nums">
+                                &yen;{formatCurrency(yearTotal)}
+                            </p>
+                        </CardContent>
+                    </Card>
                     {Object.entries(jobTotals).map(([name, total]) => (
-                        <div
+                        <Card
                             key={name}
-                            className="rounded-xl border p-6"
+                            className="transition-shadow hover:shadow-md"
                         >
-                            <p className="text-sm text-muted-foreground">
-                                {name}
-                            </p>
-                            <p className="mt-1 text-2xl font-semibold tabular-nums">
-                                &yen;{formatCurrency(total)}
-                            </p>
-                        </div>
+                            <CardHeader>
+                                <div className="flex items-center gap-2">
+                                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                    <p className="text-sm text-muted-foreground">
+                                        {name}
+                                    </p>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-2xl font-semibold tabular-nums">
+                                    &yen;{formatCurrency(total)}
+                                </p>
+                            </CardContent>
+                        </Card>
                     ))}
                 </div>
             </section>
+
+            {/* グラフ群 */}
+            {jobNames.length > 0 && (
+                <section>
+                    <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+                        <Card>
+                            <CardHeader>
+                                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                    月別推移
+                                </p>
+                            </CardHeader>
+                            <CardContent>
+                                <YearlyChart
+                                    data={yearlyChartData}
+                                    jobNames={jobNames}
+                                />
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                    バイト先別構成比
+                                </p>
+                            </CardHeader>
+                            <CardContent>
+                                <JobRatioChart data={jobRatioData} />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </section>
+            )}
 
             {/* 月別テーブル */}
             {jobNames.length === 0 ? (
