@@ -203,10 +203,10 @@ export default async function DashboardPage({
                 ))}
             </div>
 
-            {/* 未入力の予定 */}
+            {/* 未入力の勤務 */}
             <section>
                 <div className="mb-4 flex items-center gap-3">
-                    <h2 className="text-lg font-semibold">未入力の予定</h2>
+                    <h2 className="text-lg font-semibold">未入力の勤務</h2>
                     {pendingShifts.length > 0 && (
                         <Badge variant="destructive">
                             {pendingShifts.length}
@@ -215,7 +215,7 @@ export default async function DashboardPage({
                 </div>
                 {pendingShifts.length === 0 ? (
                     <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-                        未入力の予定はありません
+                        未入力の勤務はありません
                     </div>
                 ) : (
                     <div className="space-y-6">
