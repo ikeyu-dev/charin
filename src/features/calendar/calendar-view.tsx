@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getCalendarDays } from "@/shared/lib/date";
 import type { CalendarShift } from "@/app/calendar/page";
 
@@ -115,20 +116,22 @@ export function CalendarView({ year, month, shifts }: CalendarViewProps) {
             <div className="mb-6 flex items-center gap-4">
                 <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => navigateMonth(-1)}
                 >
-                    &lt;
+                    <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <h2 className="text-lg font-semibold tabular-nums">
                     {year}年{month + 1}月
                 </h2>
                 <Button
                     variant="outline"
-                    size="sm"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => navigateMonth(1)}
                 >
-                    &gt;
+                    <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button
                     variant="ghost"

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/shared/lib/format";
 import { updateJob, deleteJob } from "@/actions/job";
+import { Wallet, TrendingUp, CheckCircle2, Clock, ChevronDown } from "lucide-react";
 
 interface JobCardProps {
     jobId: string;
@@ -122,43 +123,37 @@ export function JobCard({
                             </span>
                         )}
                     </div>
-                    <span
-                        className={`text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
-                    >
-                        <svg
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                            fill="none"
-                        >
-                            <path
-                                d="M4 6L8 10L12 6"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            />
-                        </svg>
-                    </span>
+                    <ChevronDown
+                        className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+                    />
                 </div>
 
                 <div className="grid grid-cols-4 divide-x">
                     <div className="p-6">
-                        <p className="text-xs text-muted-foreground">今月</p>
+                        <div className="flex items-center gap-1.5">
+                            <Wallet className="h-3 w-3 text-muted-foreground" />
+                            <p className="text-xs text-muted-foreground">今月</p>
+                        </div>
                         <p className="mt-1 text-xl font-bold tabular-nums">
                             &yen;{formatCurrency(monthlyTotal)}
                         </p>
                     </div>
                     <div className="p-6">
-                        <p className="text-xs text-muted-foreground">年間</p>
+                        <div className="flex items-center gap-1.5">
+                            <TrendingUp className="h-3 w-3 text-muted-foreground" />
+                            <p className="text-xs text-muted-foreground">年間</p>
+                        </div>
                         <p className="mt-1 text-xl font-bold tabular-nums">
                             &yen;{formatCurrency(yearlyTotal)}
                         </p>
                     </div>
                     <div className="p-6">
-                        <p className="text-xs text-muted-foreground">
-                            入力済みシフト
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="h-3 w-3 text-muted-foreground" />
+                            <p className="text-xs text-muted-foreground">
+                                入力済み
+                            </p>
+                        </div>
                         <p className="mt-1 text-xl font-bold tabular-nums">
                             {completedCount}
                             <span className="text-sm font-normal text-muted-foreground">
@@ -168,9 +163,12 @@ export function JobCard({
                         </p>
                     </div>
                     <div className="p-6">
-                        <p className="text-xs text-muted-foreground">
-                            総勤務時間
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <p className="text-xs text-muted-foreground">
+                                総勤務時間
+                            </p>
+                        </div>
                         <p className="mt-1 text-xl font-bold tabular-nums">
                             {workHours}
                             <span className="text-sm font-normal text-muted-foreground">
