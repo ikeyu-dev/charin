@@ -7,6 +7,12 @@ import {
     getEndOfFiscalYear,
 } from "@/shared/lib/date";
 import { Badge } from "@/components/ui/badge";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardAction,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
     Tooltip,
@@ -15,6 +21,16 @@ import {
 } from "@/components/ui/tooltip";
 import { SyncButton } from "@/features/dashboard/sync-button";
 import { MonthNavigator } from "@/features/dashboard/month-navigator";
+import { MonthlyIncomeChart } from "@/features/dashboard/monthly-income-chart";
+import { JobBreakdownChart } from "@/features/dashboard/job-breakdown-chart";
+import {
+    Wallet,
+    TrendingUp,
+    Briefcase,
+    Calendar,
+    Clock,
+    CheckCircle2,
+} from "lucide-react";
 import Link from "next/link";
 
 /** シフトを年月ごとにグループ化する */
@@ -31,6 +47,14 @@ function groupShiftsByMonth<T extends { startTime: Date }>(shifts: T[]) {
     }
     return [...groups.values()];
 }
+
+const CHART_COLORS = [
+    "var(--chart-1)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+    "var(--chart-5)",
+];
 
 /**
  * ダッシュボード画面
@@ -121,6 +145,34 @@ export default async function DashboardPage({
             ? Math.round((pastCompletedCount / pastShiftsCount) * 100)
             : 0;
 
+    // 直近6ヶ月分の月別収入データ
+    const monthlyChartData = Array.from({ length: 6 }, (_, i) => {
+        const d = new Date(selectedYear, selectedMonth - 5 + i, 1);
+        const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
+        const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+        const income = completedFiscal
+            .filter(
+                (s) => s.startTime >= monthStart && s.startTime < monthEnd
+            )
+            .reduce((sum, s) => {
+                if (!s.entry) return sum;
+                return sum + calcEntryTotal(s.entry);
+            }, 0);
+        return {
+            month: `${d.getMonth() + 1}月`,
+            income,
+        };
+    });
+
+    // バイト先別内訳データ
+    const jobBreakdownData = Object.entries(incomeByJob).map(
+        ([name, income], i) => ({
+            name,
+            income,
+            fill: CHART_COLORS[i % CHART_COLORS.length],
+        })
+    );
+
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
@@ -133,79 +185,127 @@ export default async function DashboardPage({
             {/* 収入カード群 */}
             <div className="grid gap-4 lg:grid-cols-3">
                 {/* 月別収入 */}
-                <div className="rounded-xl border p-6">
-                    <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                            月別収入
+                <Card className="transition-shadow hover:shadow-md">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <Wallet className="h-4 w-4 text-muted-foreground" />
+                            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                月別収入
+                            </p>
+                        </div>
+                        <CardAction>
+                            <MonthNavigator
+                                year={selectedYear}
+                                month={selectedMonth}
+                            />
+                        </CardAction>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-3xl font-bold tabular-nums">
+                            &yen;{formatCurrency(monthlyIncome)}
                         </p>
-                        <MonthNavigator
-                            year={selectedYear}
-                            month={selectedMonth}
-                        />
-                    </div>
-                    <p className="mt-2 text-3xl font-bold tabular-nums">
-                        &yen;{formatCurrency(monthlyIncome)}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                        {(() => {
-                            const payDate = new Date(
-                                selectedYear,
-                                selectedMonth + 1,
-                                1
-                            );
-                            return `${payDate.getFullYear()}年${payDate.getMonth() + 1}月入金`;
-                        })()}
-                    </p>
-                </div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            {(() => {
+                                const payDate = new Date(
+                                    selectedYear,
+                                    selectedMonth + 1,
+                                    1
+                                );
+                                return `${payDate.getFullYear()}年${payDate.getMonth() + 1}月入金`;
+                            })()}
+                        </p>
+                    </CardContent>
+                </Card>
 
                 {/* 年間収入 */}
-                <div className="rounded-xl border p-6">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <p className="cursor-help text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                                年間収入
-                            </p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>
-                                {new Date().getFullYear() - 1}年12月 ~{" "}
-                                {new Date().getFullYear()}年11月の勤務分
-                            </p>
-                        </TooltipContent>
-                    </Tooltip>
-                    <p className="mt-2 text-3xl font-bold tabular-nums">
-                        &yen;{formatCurrency(yearlyIncome)}
-                    </p>
-                    <div className="mt-4">
-                        <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-                            <span>入力進捗</span>
-                            <span>
-                                {pastCompletedCount} / {pastShiftsCount}
-                            </span>
+                <Card className="transition-shadow hover:shadow-md">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <p className="cursor-help text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                        年間収入
+                                    </p>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        {new Date().getFullYear() - 1}年12月 ~{" "}
+                                        {new Date().getFullYear()}年11月の勤務分
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
                         </div>
-                        <Progress value={progressPercent} />
-                    </div>
-                </div>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-3xl font-bold tabular-nums">
+                            &yen;{formatCurrency(yearlyIncome)}
+                        </p>
+                        <div className="mt-4">
+                            <div className="mb-1 flex justify-between text-xs text-muted-foreground">
+                                <span>入力進捗</span>
+                                <span>
+                                    {pastCompletedCount} / {pastShiftsCount}
+                                </span>
+                            </div>
+                            <Progress value={progressPercent} />
+                        </div>
+                    </CardContent>
+                </Card>
 
                 {/* バイト先別（今月） */}
                 {Object.entries(incomeByJob).map(([jobName, income]) => (
-                    <div
+                    <Card
                         key={jobName}
-                        className="rounded-xl border p-6"
+                        className="transition-shadow hover:shadow-md"
                     >
-                        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                            {jobName}
-                        </p>
-                        <p className="mt-2 text-2xl font-semibold tabular-nums">
-                            &yen;{formatCurrency(income)}
-                        </p>
-                    </div>
+                        <CardHeader>
+                            <div className="flex items-center gap-2">
+                                <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                    {jobName}
+                                </p>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-semibold tabular-nums">
+                                &yen;{formatCurrency(income)}
+                            </p>
+                        </CardContent>
+                    </Card>
                 ))}
+            </div>
+
+            {/* グラフ群 */}
+            <div className="grid gap-4 lg:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                            月別収入推移
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        <MonthlyIncomeChart data={monthlyChartData} />
+                    </CardContent>
+                </Card>
+                {jobBreakdownData.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                バイト先別内訳
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <JobBreakdownChart data={jobBreakdownData} />
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             {/* 未入力の勤務 */}
             <section>
                 <div className="mb-4 flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-muted-foreground" />
                     <h2 className="text-lg font-semibold">未入力の勤務</h2>
                     {pendingShifts.length > 0 && (
                         <Badge variant="destructive">
@@ -214,26 +314,26 @@ export default async function DashboardPage({
                     )}
                 </div>
                 {pendingShifts.length === 0 ? (
-                    <div className="rounded-xl border border-dashed p-8 text-center text-muted-foreground">
-                        未入力の勤務はありません
+                    <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed p-8 text-muted-foreground">
+                        <CheckCircle2 className="h-8 w-8" />
+                        <p>未入力の勤務はありません</p>
                     </div>
                 ) : (
                     <div className="space-y-6">
                         {groupShiftsByMonth(pendingShifts).map(
                             ({ label, shifts }) => (
                                 <div key={label}>
-                                    <h3 className="mb-2 text-sm font-medium text-muted-foreground">
+                                    <h3 className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                        <Calendar className="h-3.5 w-3.5" />
                                         {label}
-                                        <span className="ml-2">
-                                            ({shifts.length}件)
-                                        </span>
+                                        <span>({shifts.length}件)</span>
                                     </h3>
                                     <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                                         {shifts.map((shift) => (
                                             <Link
                                                 key={shift.id}
                                                 href={`/entry/${shift.id}`}
-                                                className="group flex items-center justify-between rounded-xl border px-5 py-4 transition-colors hover:border-primary/30 hover:bg-muted/50"
+                                                className="group flex items-center justify-between rounded-xl border px-5 py-4 transition-all hover:border-primary/40 hover:shadow-sm"
                                             >
                                                 <div>
                                                     <p className="font-semibold">
