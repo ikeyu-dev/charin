@@ -45,25 +45,27 @@ export default function RootLayout({
                             <nav className="flex flex-1 flex-col gap-1 px-3">
                                 <NavLink
                                     href="/"
-                                    icon={LayoutDashboard}
+                                    icon={
+                                        <LayoutDashboard className="h-4 w-4" />
+                                    }
                                 >
                                     ダッシュボード
                                 </NavLink>
                                 <NavLink
                                     href="/calendar"
-                                    icon={Calendar}
+                                    icon={<Calendar className="h-4 w-4" />}
                                 >
                                     カレンダー
                                 </NavLink>
                                 <NavLink
                                     href="/jobs"
-                                    icon={Briefcase}
+                                    icon={<Briefcase className="h-4 w-4" />}
                                 >
                                     バイト管理
                                 </NavLink>
                                 <NavLink
                                     href="/report"
-                                    icon={BarChart3}
+                                    icon={<BarChart3 className="h-4 w-4" />}
                                 >
                                     レポート
                                 </NavLink>

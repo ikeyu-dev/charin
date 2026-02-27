@@ -2,18 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { LucideIcon } from "lucide-react";
 
 interface NavLinkProps {
     href: string;
-    icon: LucideIcon;
+    icon: React.ReactNode;
     children: React.ReactNode;
 }
 
 /**
  * サイドバー用のアクティブ状態付きナビゲーションリンク
  */
-export function NavLink({ href, icon: Icon, children }: NavLinkProps) {
+export function NavLink({ href, icon, children }: NavLinkProps) {
     const pathname = usePathname();
     const isActive =
         href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -27,7 +26,7 @@ export function NavLink({ href, icon: Icon, children }: NavLinkProps) {
                     : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
             }`}
         >
-            <Icon className="h-4 w-4" />
+            {icon}
             {children}
         </Link>
     );
