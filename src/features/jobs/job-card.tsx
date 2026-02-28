@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/shared/lib/format";
 import { updateJob, deleteJob } from "@/actions/job";
+import { ColorPicker } from "@/features/jobs/color-picker";
 import {
     Wallet,
     TrendingUp,
@@ -19,6 +20,7 @@ import {
 interface JobCardProps {
     jobId: string;
     name: string;
+    color: string | null;
     hourlyWage: number | null;
     defaultTransportFee: number | null;
     isOneTime: boolean;
@@ -37,6 +39,7 @@ interface JobCardProps {
 export function JobCard({
     jobId,
     name,
+    color,
     hourlyWage,
     defaultTransportFee,
     isOneTime,
@@ -55,6 +58,7 @@ export function JobCard({
     );
     const [editOneTime, setEditOneTime] = useState(isOneTime);
     const [editDesc, setEditDesc] = useState(description ?? "");
+    const [editColor, setEditColor] = useState<string | null>(color);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -71,6 +75,7 @@ export function JobCard({
             defaultTransportFee: editTransport ? Number(editTransport) : null,
             isOneTime: editOneTime,
             description: editDesc || null,
+            color: editColor,
         });
 
         if (result.success) {
@@ -255,6 +260,12 @@ export function JobCard({
                                     id={`onetime-${jobId}`}
                                     checked={editOneTime}
                                     onCheckedChange={setEditOneTime}
+                                />
+                            </div>
+                            <div className="sm:col-span-2">
+                                <ColorPicker
+                                    value={editColor}
+                                    onChange={setEditColor}
                                 />
                             </div>
                             <div>
