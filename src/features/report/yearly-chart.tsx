@@ -19,11 +19,7 @@ interface YearlyChartProps {
 /**
  * 年間月別推移を積み上げ棒グラフで表示する
  */
-export function YearlyChart({
-    data,
-    jobNames,
-    jobColors,
-}: YearlyChartProps) {
+export function YearlyChart({ data, jobNames, jobColors }: YearlyChartProps) {
     if (data.length === 0) return null;
 
     const chartConfig = Object.fromEntries(

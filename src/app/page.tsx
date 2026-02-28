@@ -49,7 +49,6 @@ function groupShiftsByMonth<T extends { startTime: Date }>(shifts: T[]) {
     return [...groups.values()];
 }
 
-
 /**
  * ダッシュボード画面
  * 未入力一覧と収入サマリーを表示する
@@ -115,8 +114,10 @@ export default async function DashboardPage({
         return sum + calcEntryTotal(shift.entry);
     }, 0);
 
-    const incomeByJob: Record<string, { income: number; color: string | null }> =
-        {};
+    const incomeByJob: Record<
+        string,
+        { income: number; color: string | null }
+    > = {};
     for (const shift of completedSelectedMonth) {
         if (!shift.entry) continue;
         const jobName = shift.job.name;
