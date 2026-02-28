@@ -6,6 +6,7 @@ import {
 } from "@/shared/lib/date";
 import { JobCard } from "@/features/jobs/job-card";
 import { CreateJobDialog } from "@/features/jobs/create-job-dialog";
+import { Briefcase } from "lucide-react";
 
 /**
  * バイト管理画面
@@ -71,9 +72,12 @@ export default async function JobsPage() {
     return (
         <div className="space-y-8">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold tracking-tight">
-                    バイト管理
-                </h1>
+                <div className="flex items-center gap-3">
+                    <Briefcase className="h-6 w-6 text-muted-foreground" />
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        バイト管理
+                    </h1>
+                </div>
                 <CreateJobDialog />
             </div>
 

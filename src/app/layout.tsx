@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { NavLink } from "@/components/nav-link";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { LayoutDashboard, Calendar, Briefcase, BarChart3 } from "lucide-react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,10 +43,32 @@ export default function RootLayout({
                                 </Link>
                             </div>
                             <nav className="flex flex-1 flex-col gap-1 px-3">
-                                <NavLink href="/">ダッシュボード</NavLink>
-                                <NavLink href="/calendar">カレンダー</NavLink>
-                                <NavLink href="/jobs">バイト管理</NavLink>
-                                <NavLink href="/report">レポート</NavLink>
+                                <NavLink
+                                    href="/"
+                                    icon={
+                                        <LayoutDashboard className="h-4 w-4" />
+                                    }
+                                >
+                                    ダッシュボード
+                                </NavLink>
+                                <NavLink
+                                    href="/calendar"
+                                    icon={<Calendar className="h-4 w-4" />}
+                                >
+                                    カレンダー
+                                </NavLink>
+                                <NavLink
+                                    href="/jobs"
+                                    icon={<Briefcase className="h-4 w-4" />}
+                                >
+                                    バイト管理
+                                </NavLink>
+                                <NavLink
+                                    href="/report"
+                                    icon={<BarChart3 className="h-4 w-4" />}
+                                >
+                                    レポート
+                                </NavLink>
                             </nav>
                         </aside>
                         <main className="flex-1 overflow-auto p-8">

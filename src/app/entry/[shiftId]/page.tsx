@@ -5,6 +5,8 @@ import { EntryForm } from "@/features/entry/entry-form";
 import type { EntryInitialData } from "@/features/entry/entry-form";
 import { EntryActions } from "@/features/entry/entry-actions";
 import { BackButton } from "@/components/back-button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Briefcase, Calendar, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
 
 interface EntryPageProps {
@@ -67,33 +69,50 @@ export default async function EntryPage({
                 <BackButton />
             </div>
 
-            <div className="rounded-xl border p-6">
-                <p className="text-lg font-semibold">{shift.job.name}</p>
-                <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{formatDateShort(shift.startTime)}</span>
-                    <span>
-                        {formatTime(shift.startTime)} -{" "}
-                        {formatTime(shift.endTime)}
-                    </span>
-                </div>
-                {shift.job.hourlyWage && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                        時給 &yen;{formatCurrency(shift.job.hourlyWage)}
-                    </p>
-                )}
-            </div>
+            <Card>
+                <CardHeader>
+                    <div className="flex items-center gap-2">
+                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                        <p className="text-lg font-semibold">
+                            {shift.job.name}
+                        </p>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {formatDateShort(shift.startTime)}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <Clock className="h-3.5 w-3.5" />
+                            {formatTime(shift.startTime)} -{" "}
+                            {formatTime(shift.endTime)}
+                        </span>
+                    </div>
+                    {shift.job.hourlyWage && (
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            時給 &yen;{formatCurrency(shift.job.hourlyWage)}
+                        </p>
+                    )}
+                </CardContent>
+            </Card>
 
             {isCompleted && !isEditMode ? (
-                <div className="rounded-xl border p-6">
-                    <p className="text-sm text-muted-foreground">入力済み</p>
-                    <p className="mt-1 text-2xl font-bold tabular-nums">
-                        &yen;{formatCurrency(shift.entry!.income ?? 0)}
-                    </p>
-                    <EntryActions
-                        shiftId={shiftId}
-                        entryId={shift.entry!.id}
-                    />
-                </div>
+                <Card>
+                    <CardContent className="pt-6">
+                        <p className="text-sm text-muted-foreground">
+                            入力済み
+                        </p>
+                        <p className="mt-1 text-2xl font-bold tabular-nums">
+                            &yen;{formatCurrency(shift.entry!.income ?? 0)}
+                        </p>
+                        <EntryActions
+                            shiftId={shiftId}
+                            entryId={shift.entry!.id}
+                        />
+                    </CardContent>
+                </Card>
             ) : (
                 <EntryForm
                     shiftId={shift.id}

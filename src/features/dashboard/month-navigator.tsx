@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MonthNavigatorProps {
     year: number;
@@ -33,7 +34,7 @@ export function MonthNavigator({ year, month }: MonthNavigatorProps) {
                 onClick={() => navigate(-1)}
                 className="h-7 w-7 p-0"
             >
-                &lt;
+                <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="min-w-[5rem] text-center text-xs font-medium text-muted-foreground tabular-nums">
                 {year}年{month + 1}月
@@ -44,7 +45,7 @@ export function MonthNavigator({ year, month }: MonthNavigatorProps) {
                 onClick={() => navigate(1)}
                 className="h-7 w-7 p-0"
             >
-                &gt;
+                <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
                 variant="ghost"

@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { createEntry, updateEntry } from "@/actions/entry";
 import { formatCurrency, formatMinutesToHours } from "@/shared/lib/format";
+import { Bus, Receipt, StickyNote } from "lucide-react";
 import {
     timeToMinutes,
     calcLateNightMinutes,
@@ -480,7 +481,13 @@ export function EntryForm({
                 {/* 交通費 */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="transport-switch">交通費</Label>
+                        <Label
+                            htmlFor="transport-switch"
+                            className="flex items-center gap-2"
+                        >
+                            <Bus className="h-4 w-4 text-muted-foreground" />
+                            交通費
+                        </Label>
                         <Switch
                             id="transport-switch"
                             checked={transportEnabled}
@@ -510,7 +517,10 @@ export function EntryForm({
                 {/* 経費 */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                        <Label>経費</Label>
+                        <Label className="flex items-center gap-2">
+                            <Receipt className="h-4 w-4 text-muted-foreground" />
+                            経費
+                        </Label>
                         <Button
                             type="button"
                             variant="outline"
@@ -574,7 +584,13 @@ export function EntryForm({
 
                 {/* メモ */}
                 <div>
-                    <Label htmlFor="note">メモ</Label>
+                    <Label
+                        htmlFor="note"
+                        className="flex items-center gap-2"
+                    >
+                        <StickyNote className="h-4 w-4 text-muted-foreground" />
+                        メモ
+                    </Label>
                     <Input
                         id="note"
                         value={note}
