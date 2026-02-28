@@ -1,5 +1,6 @@
 import { prisma } from "@/shared/lib/prisma";
 import { formatCurrency } from "@/shared/lib/format";
+import { getJobColor } from "@/shared/lib/color";
 import {
     formatDateShort,
     formatTime,
@@ -48,13 +49,6 @@ function groupShiftsByMonth<T extends { startTime: Date }>(shifts: T[]) {
     return [...groups.values()];
 }
 
-const CHART_COLORS = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-];
 
 /**
  * ダッシュボード画面
@@ -121,15 +115,16 @@ export default async function DashboardPage({
         return sum + calcEntryTotal(shift.entry);
     }, 0);
 
-    const incomeByJob = completedSelectedMonth.reduce(
-        (acc, shift) => {
-            if (!shift.entry) return acc;
-            const jobName = shift.job.name;
-            acc[jobName] = (acc[jobName] ?? 0) + calcEntryTotal(shift.entry);
-            return acc;
-        },
-        {} as Record<string, number>
-    );
+    const incomeByJob: Record<string, { income: number; color: string | null }> =
+        {};
+    for (const shift of completedSelectedMonth) {
+        if (!shift.entry) continue;
+        const jobName = shift.job.name;
+        if (!incomeByJob[jobName]) {
+            incomeByJob[jobName] = { income: 0, color: shift.job.color };
+        }
+        incomeByJob[jobName].income += calcEntryTotal(shift.entry);
+    }
 
     const tomorrow = new Date();
     tomorrow.setHours(0, 0, 0, 0);
@@ -164,10 +159,10 @@ export default async function DashboardPage({
 
     // バイト先別内訳データ
     const jobBreakdownData = Object.entries(incomeByJob).map(
-        ([name, income], i) => ({
+        ([name, { income, color }]) => ({
             name,
             income,
-            fill: CHART_COLORS[i % CHART_COLORS.length],
+            fill: getJobColor(name, color),
         })
     );
 
@@ -252,7 +247,7 @@ export default async function DashboardPage({
                 </Card>
 
                 {/* バイト先別（今月） */}
-                {Object.entries(incomeByJob).map(([jobName, income]) => (
+                {Object.entries(incomeByJob).map(([jobName, { income }]) => (
                     <Card
                         key={jobName}
                         className="transition-shadow hover:shadow-md"

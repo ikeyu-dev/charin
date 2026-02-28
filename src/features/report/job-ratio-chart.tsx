@@ -10,14 +10,6 @@ import {
     ChartLegendContent,
 } from "@/components/ui/chart";
 
-const CHART_COLORS = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-];
-
 interface JobRatioData {
     name: string;
     total: number;
@@ -35,11 +27,11 @@ export function JobRatioChart({ data }: JobRatioChartProps) {
     if (data.length === 0) return null;
 
     const chartConfig = Object.fromEntries(
-        data.map((item, i) => [
+        data.map((item) => [
             item.name,
             {
                 label: item.name,
-                color: CHART_COLORS[i % CHART_COLORS.length],
+                color: item.fill,
             },
         ])
     ) satisfies ChartConfig;

@@ -1,5 +1,6 @@
 import { prisma } from "@/shared/lib/prisma";
 import { formatCurrency } from "@/shared/lib/format";
+import { getJobColor } from "@/shared/lib/color";
 import { getStartOfFiscalYear, getEndOfFiscalYear } from "@/shared/lib/date";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
@@ -33,13 +34,6 @@ const MONTH_NAMES = [
     "12月",
 ] as const;
 
-const CHART_COLORS = [
-    "var(--chart-1)",
-    "var(--chart-2)",
-    "var(--chart-3)",
-    "var(--chart-4)",
-    "var(--chart-5)",
-];
 
 /**
  * 収入レポート画面
@@ -87,6 +81,17 @@ export default async function ReportPage() {
 
     const jobNames = [...new Set(shifts.map((s) => s.job.name))].sort();
 
+    /** バイト先名 → カラーのマップ */
+    const jobColors: Record<string, string> = {};
+    for (const shift of shifts) {
+        if (!jobColors[shift.job.name]) {
+            jobColors[shift.job.name] = getJobColor(
+                shift.job.name,
+                shift.job.color
+            );
+        }
+    }
+
     /** 年度内の各月のキーと表示ラベルを生成する */
     const fiscalMonthEntries = FISCAL_MONTHS.map((month) => {
         const year = month === 11 ? currentYear - 1 : currentYear;
@@ -107,10 +112,10 @@ export default async function ReportPage() {
         });
 
     // バイト先別構成比グラフ用データ
-    const jobRatioData = Object.entries(jobTotals).map(([name, total], i) => ({
+    const jobRatioData = Object.entries(jobTotals).map(([name, total]) => ({
         name,
         total,
-        fill: CHART_COLORS[i % CHART_COLORS.length],
+        fill: jobColors[name],
     }));
 
     return (
@@ -182,6 +187,7 @@ export default async function ReportPage() {
                                 <YearlyChart
                                     data={yearlyChartData}
                                     jobNames={jobNames}
+                                    jobColors={jobColors}
                                 />
                             </CardContent>
                         </Card>
