@@ -5,35 +5,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getCalendarDays } from "@/shared/lib/date";
+import { getJobColor } from "@/shared/lib/color";
 import type { CalendarShift } from "@/app/calendar/page";
 
 const DAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"] as const;
-
-/** デフォルトのバイト先カラーパレット */
-const DEFAULT_COLORS = [
-    "#3b82f6",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-    "#8b5cf6",
-    "#ec4899",
-    "#06b6d4",
-    "#84cc16",
-];
-
-/**
- * バイト先名からデフォルト色を決定する
- * @param name - バイト先名
- * @returns HEXカラー文字列
- */
-function getJobColor(name: string, color: string | null): string {
-    if (color) return color;
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return DEFAULT_COLORS[Math.abs(hash) % DEFAULT_COLORS.length];
-}
 
 /**
  * 時刻文字列を「H:MM」形式にフォーマットする
