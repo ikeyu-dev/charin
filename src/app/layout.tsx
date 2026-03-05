@@ -3,7 +3,13 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { NavLink } from "@/components/nav-link";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { LayoutDashboard, Calendar, Briefcase, BarChart3 } from "lucide-react";
+import {
+    LayoutDashboard,
+    Calendar,
+    Briefcase,
+    BarChart3,
+    List,
+} from "lucide-react";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -56,6 +62,12 @@ export default function RootLayout({
                                     icon={<Calendar className="h-4 w-4" />}
                                 >
                                     カレンダー
+                                </NavLink>
+                                <NavLink
+                                    href="/shifts"
+                                    icon={<List className="h-4 w-4" />}
+                                >
+                                    シフト一覧
                                 </NavLink>
                                 <NavLink
                                     href="/jobs"
