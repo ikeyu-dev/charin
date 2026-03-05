@@ -24,6 +24,10 @@ import { SyncButton } from "@/features/dashboard/sync-button";
 import { MonthNavigator } from "@/features/dashboard/month-navigator";
 import { MonthlyIncomeChart } from "@/features/dashboard/monthly-income-chart";
 import { JobBreakdownChart } from "@/features/dashboard/job-breakdown-chart";
+import { GoalSetting } from "@/features/dashboard/goal-setting";
+import { GoalProgress } from "@/features/dashboard/goal-progress";
+import { IncomeWallAlert } from "@/features/dashboard/income-wall-alert";
+import { getGoal } from "@/actions/goal";
 import {
     Wallet,
     TrendingUp,
@@ -141,6 +145,8 @@ export default async function DashboardPage({
             ? Math.round((pastCompletedCount / pastShiftsCount) * 100)
             : 0;
 
+    const goal = await getGoal();
+
     // 直近6ヶ月分の月別収入データ
     const monthlyChartData = Array.from({ length: 6 }, (_, i) => {
         const d = new Date(selectedYear, selectedMonth - 5 + i, 1);
@@ -173,7 +179,13 @@ export default async function DashboardPage({
                 <h1 className="text-2xl font-bold tracking-tight">
                     ダッシュボード
                 </h1>
-                <SyncButton />
+                <div className="flex items-center gap-2">
+                    <GoalSetting
+                        currentMonthly={goal?.monthlyTarget ?? null}
+                        currentYearly={goal?.yearlyTarget ?? null}
+                    />
+                    <SyncButton />
+                </div>
             </div>
 
             {/* 収入カード群 */}
@@ -268,6 +280,19 @@ export default async function DashboardPage({
                         </CardContent>
                     </Card>
                 ))}
+            </div>
+
+            {/* 目標達成率・年収の壁 */}
+            <div className="grid gap-4 lg:grid-cols-2">
+                <GoalProgress
+                    monthlyIncome={monthlyIncome}
+                    yearlyIncome={yearlyIncome}
+                    monthlyTarget={goal?.monthlyTarget ?? null}
+                    yearlyTarget={goal?.yearlyTarget ?? null}
+                />
+                <div className="flex flex-col justify-center">
+                    <IncomeWallAlert yearlyIncome={yearlyIncome} />
+                </div>
             </div>
 
             {/* グラフ群 */}
