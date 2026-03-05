@@ -92,6 +92,7 @@ export default async function JobsPage() {
                             key={job.id}
                             jobId={job.id}
                             name={job.name}
+                            color={job.color}
                             hourlyWage={job.hourlyWage}
                             defaultTransportFee={job.defaultTransportFee}
                             isOneTime={job.isOneTime}

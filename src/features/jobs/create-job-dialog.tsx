@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { createJob } from "@/actions/job";
+import { ColorPicker } from "@/features/jobs/color-picker";
 
 /**
  * バイト先の新規作成ダイアログ
@@ -25,6 +26,7 @@ export function CreateJobDialog() {
     const [defaultTransportFee, setDefaultTransportFee] = useState("");
     const [isOneTime, setIsOneTime] = useState(false);
     const [description, setDescription] = useState("");
+    const [color, setColor] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -42,6 +44,7 @@ export function CreateJobDialog() {
                 : undefined,
             isOneTime: isOneTime || undefined,
             description: description || undefined,
+            color: color || undefined,
         });
 
         if (result.success) {
@@ -51,6 +54,7 @@ export function CreateJobDialog() {
             setDefaultTransportFee("");
             setIsOneTime(false);
             setDescription("");
+            setColor(null);
             router.refresh();
         } else {
             setError(result.error ?? "作成に失敗しました");
@@ -118,6 +122,10 @@ export function CreateJobDialog() {
                             onCheckedChange={setIsOneTime}
                         />
                     </div>
+                    <ColorPicker
+                        value={color}
+                        onChange={setColor}
+                    />
                     <div>
                         <Label htmlFor="description">メモ</Label>
                         <Input
