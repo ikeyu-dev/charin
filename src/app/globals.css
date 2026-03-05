@@ -124,3 +124,58 @@
         @apply bg-background text-foreground;
     }
 }
+
+@media print {
+    /* サイドバーを非表示 */
+    aside {
+        display: none !important;
+    }
+
+    /* メインコンテンツを全幅に */
+    main {
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* flexレイアウトの調整 */
+    main.flex-1 {
+        width: 100% !important;
+    }
+
+    /* 背景色の印刷を許可 */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* OKLCH非対応ブラウザ向けフォールバック */
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    /* カードの影を除去し、境界線を維持 */
+    [class*="card"] {
+        box-shadow: none !important;
+        border: 1px solid #e5e5e5 !important;
+        break-inside: avoid;
+    }
+
+    /* テーブルのページブレーク制御 */
+    table {
+        break-inside: auto;
+    }
+    tr {
+        break-inside: avoid;
+    }
+
+    /* グラフセクションのページブレーク制御 */
+    section {
+        break-inside: avoid;
+    }
+
+    /* 不要なホバー効果を除去 */
+    .hover\:shadow-md:hover {
+        box-shadow: none !important;
+    }
+}

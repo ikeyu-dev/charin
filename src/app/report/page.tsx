@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { YearlyChart } from "@/features/report/yearly-chart";
 import { JobRatioChart } from "@/features/report/job-ratio-chart";
+import { ExportButton } from "@/features/report/export-button";
 import { Coins, Briefcase } from "lucide-react";
 
 /** 年度内の月を12月始まりの順序で並べる（12, 1, 2, ..., 11） */
@@ -119,13 +120,17 @@ export default async function ReportPage() {
 
     return (
         <div className="space-y-10">
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                    {currentYear}年 収入レポート
-                </h1>
-                <p className="mt-1 text-sm text-muted-foreground">
-                    {currentYear - 1}年12月 ~ {currentYear}年11月の勤務分
-                </p>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight">
+                        {currentYear}年 収入レポート
+                    </h1>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {currentYear - 1}年12月 ~ {currentYear}
+                        年11月の勤務分
+                    </p>
+                </div>
+                <ExportButton />
             </div>
 
             {/* 年間サマリー */}
