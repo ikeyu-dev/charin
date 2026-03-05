@@ -60,6 +60,15 @@ model Entry {
   updatedAt    DateTime  @updatedAt
 }
 
+/// 目標金額の設定（月間・年間）
+model Goal {
+  id            String   @id @default(cuid())
+  monthlyTarget Int?
+  yearlyTarget  Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 /// 経費（1つのEntryに複数紐づけ可能）
 model Expense {
   id        String   @id @default(cuid())

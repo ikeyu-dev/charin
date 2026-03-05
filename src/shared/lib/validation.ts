@@ -60,9 +60,16 @@ export const updateJobSchema = z.object({
     color: z.string().nullable().optional(),
 });
 
+/** 目標金額のバリデーションスキーマ */
+export const goalSchema = z.object({
+    monthlyTarget: z.number().int().min(0).nullable().optional(),
+    yearlyTarget: z.number().int().min(0).nullable().optional(),
+});
+
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 export type HoursEntryInput = z.infer<typeof hoursEntrySchema>;
 export type IncomeEntryInput = z.infer<typeof incomeEntrySchema>;
 export type EntryInput = z.infer<typeof entrySchema>;
 export type CreateJobInput = z.infer<typeof createJobSchema>;
 export type UpdateJobInput = z.infer<typeof updateJobSchema>;
+export type GoalInput = z.infer<typeof goalSchema>;
