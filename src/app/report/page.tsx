@@ -118,9 +118,27 @@ export default async function ReportPage() {
         fill: jobColors[name],
     }));
 
+    const printDate = new Date().toLocaleDateString("ja-JP", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
+
     return (
         <div className="space-y-10">
-            <div className="flex items-start justify-between">
+            {/* 印刷用ヘッダー（画面では非表示） */}
+            <div className="print-header hidden">
+                <h1>
+                    Charin &mdash; {currentYear}年 収入レポート
+                </h1>
+                <span className="print-meta">
+                    {currentYear - 1}年12月 ~ {currentYear}年11月 | 出力日:{" "}
+                    {printDate}
+                </span>
+            </div>
+
+            {/* 画面用ヘッダー（印刷時は非表示） */}
+            <div className="flex items-start justify-between print-hidden">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">
                         {currentYear}年 収入レポート
@@ -135,16 +153,16 @@ export default async function ReportPage() {
 
             {/* 年間サマリー */}
             <section>
-                <h2 className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                <h2 className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground print-hidden">
                     年間合計
                 </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="print-summary-grid grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <Card className="transition-shadow hover:shadow-md">
                         <CardHeader>
                             <div className="flex items-center gap-2">
                                 <Coins className="h-4 w-4 text-muted-foreground" />
                                 <p className="text-sm text-muted-foreground">
-                                    合計
+                                    年間合計
                                 </p>
                             </div>
                         </CardHeader>
@@ -179,33 +197,31 @@ export default async function ReportPage() {
 
             {/* グラフ群 */}
             {jobNames.length > 0 && (
-                <section>
-                    <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-                        <Card>
-                            <CardHeader>
-                                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                                    月別推移
-                                </p>
-                            </CardHeader>
-                            <CardContent>
-                                <YearlyChart
-                                    data={yearlyChartData}
-                                    jobNames={jobNames}
-                                    jobColors={jobColors}
-                                />
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader>
-                                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                                    バイト先別構成比
-                                </p>
-                            </CardHeader>
-                            <CardContent>
-                                <JobRatioChart data={jobRatioData} />
-                            </CardContent>
-                        </Card>
-                    </div>
+                <section className="print-charts grid gap-4 lg:grid-cols-[2fr_1fr]">
+                    <Card>
+                        <CardHeader>
+                            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                月別推移
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <YearlyChart
+                                data={yearlyChartData}
+                                jobNames={jobNames}
+                                jobColors={jobColors}
+                            />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                                バイト先別構成比
+                            </p>
+                        </CardHeader>
+                        <CardContent>
+                            <JobRatioChart data={jobRatioData} />
+                        </CardContent>
+                    </Card>
                 </section>
             )}
 
@@ -215,7 +231,7 @@ export default async function ReportPage() {
                     入力済みのデータがありません
                 </p>
             ) : (
-                <section>
+                <section className="print-table-section">
                     <h2 className="mb-4 text-xs font-medium uppercase tracking-widest text-muted-foreground">
                         月別内訳
                     </h2>
@@ -292,6 +308,11 @@ export default async function ReportPage() {
                     </div>
                 </section>
             )}
+
+            {/* 印刷用フッター（画面では非表示） */}
+            <div className="print-footer hidden">
+                Charin 収入管理 &mdash; {printDate} 出力
+            </div>
         </div>
     );
 }

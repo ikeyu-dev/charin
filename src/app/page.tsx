@@ -147,21 +147,38 @@ export default async function DashboardPage({
 
     const goal = await getGoal();
 
-    // 直近6ヶ月分の月別収入データ
+    /** バイト先別のカラーマップを構築 */
+    const jobColorMap: Record<string, string> = {};
+    for (const shift of completedFiscal) {
+        if (!jobColorMap[shift.job.name]) {
+            jobColorMap[shift.job.name] = getJobColor(
+                shift.job.name,
+                shift.job.color
+            );
+        }
+    }
+
+    const fiscalJobNames = [
+        ...new Set(completedFiscal.map((s) => s.job.name)),
+    ].sort();
+
+    // 直近6ヶ月分の月別・バイト先別収入データ
     const monthlyChartData = Array.from({ length: 6 }, (_, i) => {
         const d = new Date(selectedYear, selectedMonth - 5 + i, 1);
         const monthStart = new Date(d.getFullYear(), d.getMonth(), 1);
         const monthEnd = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-        const income = completedFiscal
-            .filter((s) => s.startTime >= monthStart && s.startTime < monthEnd)
-            .reduce((sum, s) => {
-                if (!s.entry) return sum;
-                return sum + calcEntryTotal(s.entry);
-            }, 0);
-        return {
+        const row: Record<string, string | number> = {
             month: `${d.getMonth() + 1}月`,
-            income,
         };
+        for (const shift of completedFiscal) {
+            if (shift.startTime >= monthStart && shift.startTime < monthEnd) {
+                if (!shift.entry) continue;
+                const total = calcEntryTotal(shift.entry);
+                row[shift.job.name] =
+                    ((row[shift.job.name] as number) ?? 0) + total;
+            }
+        }
+        return row;
     });
 
     // バイト先別内訳データ
@@ -304,7 +321,11 @@ export default async function DashboardPage({
                         </p>
                     </CardHeader>
                     <CardContent>
-                        <MonthlyIncomeChart data={monthlyChartData} />
+                        <MonthlyIncomeChart
+                            data={monthlyChartData}
+                            jobNames={fiscalJobNames}
+                            jobColors={jobColorMap}
+                        />
                     </CardContent>
                 </Card>
                 {jobBreakdownData.length > 0 && (

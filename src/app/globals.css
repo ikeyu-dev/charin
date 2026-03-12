@@ -125,57 +125,204 @@
     }
 }
 
+/* ── 印刷レイアウト ── */
 @media print {
-    /* サイドバーを非表示 */
-    aside {
-        display: none !important;
+    @page {
+        size: A4;
+        margin: 16mm 14mm;
     }
 
-    /* メインコンテンツを全幅に */
-    main {
-        padding: 0 !important;
-        overflow: visible !important;
-    }
-
-    /* flexレイアウトの調整 */
-    main.flex-1 {
-        width: 100% !important;
-    }
-
-    /* 背景色の印刷を許可 */
     * {
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
-    /* OKLCH非対応ブラウザ向けフォールバック */
     body {
-        background: #ffffff !important;
-        color: #000000 !important;
+        background: #fff !important;
+        color: #1a1a1a !important;
+        font-size: 11px !important;
+        line-height: 1.5 !important;
     }
 
-    /* カードの影を除去し、境界線を維持 */
-    [class*="card"] {
+    /* サイドバー・ナビ非表示 */
+    aside {
+        display: none !important;
+    }
+
+    /* メインコンテンツを全幅化 */
+    main {
+        padding: 0 !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    /* 印刷時のみ表示する要素 */
+    .print-only {
+        display: block !important;
+    }
+
+    /* 印刷時に非表示にする要素 */
+    .print-hidden {
+        display: none !important;
+    }
+
+    /* ── 印刷ヘッダー ── */
+    .print-header {
+        display: flex !important;
+        align-items: baseline;
+        justify-content: space-between;
+        border-bottom: 2px solid #1a1a1a;
+        padding-bottom: 8px;
+        margin-bottom: 20px;
+    }
+
+    .print-header h1 {
+        font-size: 20px !important;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    .print-header .print-meta {
+        font-size: 10px;
+        color: #666;
+    }
+
+    /* ── サマリーカード ── */
+    .print-summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .print-summary-grid [class*="card"] {
         box-shadow: none !important;
-        border: 1px solid #e5e5e5 !important;
+        border: 1px solid #ddd !important;
+        border-radius: 6px;
+        padding: 10px 14px !important;
         break-inside: avoid;
     }
 
-    /* テーブルのページブレーク制御 */
+    .print-summary-grid [class*="CardHeader"] {
+        padding: 0 !important;
+    }
+
+    .print-summary-grid [class*="CardContent"] {
+        padding: 4px 0 0 !important;
+    }
+
+    /* ── グラフセクション ── */
+    .print-charts {
+        display: grid !important;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+        break-inside: avoid;
+    }
+
+    .print-charts [class*="card"] {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        border-radius: 6px;
+        break-inside: avoid;
+    }
+
+    .print-charts [class*="CardHeader"] {
+        padding: 10px 14px 4px !important;
+    }
+
+    .print-charts [class*="CardContent"] {
+        padding: 4px 14px 10px !important;
+    }
+
+    /* recharts のSVGサイズ制御 */
+    .print-charts .recharts-wrapper {
+        max-height: 220px !important;
+    }
+
+    .print-charts .recharts-surface {
+        max-height: 220px !important;
+    }
+
+    /* ── テーブルセクション ── */
+    .print-table-section {
+        break-before: auto;
+    }
+
+    .print-table-section h2 {
+        font-size: 12px !important;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #666;
+        margin-bottom: 8px;
+    }
+
     table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 10px !important;
         break-inside: auto;
     }
+
+    thead {
+        break-inside: avoid;
+    }
+
+    thead tr {
+        background: #f5f5f5 !important;
+    }
+
+    th {
+        font-weight: 600 !important;
+        padding: 6px 10px !important;
+        border-bottom: 1.5px solid #ccc !important;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 5px 10px !important;
+        border-bottom: 1px solid #eee !important;
+    }
+
     tr {
         break-inside: avoid;
     }
 
-    /* グラフセクションのページブレーク制御 */
-    section {
+    /* テーブル偶数行 */
+    tbody tr:nth-child(even) {
+        background: #fafafa !important;
+    }
+
+    tfoot tr {
+        background: #f0f0f0 !important;
+        font-weight: 600 !important;
+        border-top: 1.5px solid #ccc !important;
+    }
+
+    /* ── 汎用カード ── */
+    [class*="card"] {
+        box-shadow: none !important;
         break-inside: avoid;
     }
 
-    /* 不要なホバー効果を除去 */
+    /* ── 印刷フッター ── */
+    .print-footer {
+        display: block !important;
+        margin-top: 24px;
+        padding-top: 8px;
+        border-top: 1px solid #ddd;
+        font-size: 9px;
+        color: #999;
+        text-align: right;
+    }
+
+    /* ホバー効果除去 */
     .hover\:shadow-md:hover {
         box-shadow: none !important;
+    }
+
+    .transition-shadow {
+        transition: none !important;
     }
 }
