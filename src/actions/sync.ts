@@ -20,7 +20,13 @@ interface SyncResult {
     updated: number;
     deleted: number;
     freeeEntries?: number;
+    warnings?: string[];
     error?: string;
+}
+
+interface FreeeSyncResult {
+    created: number;
+    warnings: string[];
 }
 
 /**
@@ -66,16 +72,19 @@ export async function syncCalendarEvents(): Promise<SyncResult> {
 
         // freee勤怠データの自動入力
         let freeeEntries = 0;
-        try {
-            freeeEntries = await syncFreeeAttendance();
-        } catch (e) {
-            console.error(
-                "[freee同期] エラー:",
-                e instanceof Error ? e.message : e
-            );
-        }
+        let warnings: string[] = [];
+        const freeeResult = await syncFreeeAttendance();
+        freeeEntries = freeeResult.created;
+        warnings = freeeResult.warnings;
 
-        return { success: true, created, updated, deleted, freeeEntries };
+        return {
+            success: true,
+            created,
+            updated,
+            deleted,
+            freeeEntries,
+            warnings,
+        };
     } catch (error) {
         const message = error instanceof Error ? error.message : "不明なエラー";
         return {
@@ -194,23 +203,42 @@ const FREEE_JOB_NAME = "モシモス";
  * freee人事労務から勤怠データを取得し、モシモスの未入力シフトに自動入力する
  * @returns 自動入力したエントリー数
  */
-async function syncFreeeAttendance(): Promise<number> {
-    if (!process.env.FREEE_EMAIL || !process.env.FREEE_PASSWORD) {
-        return 0;
+async function syncFreeeAttendance(): Promise<FreeeSyncResult> {
+    const warnings: string[] = [];
+
+    if (
+        !process.env.FREEE_EMAIL ||
+        !process.env.FREEE_PASSWORD ||
+        !process.env.FREEE_EMPLOYEE_ID
+    ) {
+        warnings.push(
+            "freee自動入力をスキップしました: FREEE_EMAIL / FREEE_PASSWORD / FREEE_EMPLOYEE_ID を確認してください"
+        );
+        return { created: 0, warnings };
     }
 
     // モシモスの未入力シフトを取得
     const job = await prisma.job.findUnique({
         where: { name: FREEE_JOB_NAME },
     });
-    if (!job) return 0;
+    if (!job) {
+        warnings.push(
+            `freee自動入力をスキップしました: バイト先「${FREEE_JOB_NAME}」が見つかりません`
+        );
+        return { created: 0, warnings };
+    }
 
     const pendingShifts = await prisma.shift.findMany({
         where: { jobId: job.id, entryStatus: "PENDING" },
-        include: { job: true },
+        include: {
+            job: true,
+            entry: { select: { id: true } },
+        },
         orderBy: { startTime: "asc" },
     });
-    if (pendingShifts.length === 0) return 0;
+    if (pendingShifts.length === 0) {
+        return { created: 0, warnings };
+    }
 
     // 対象月を特定（重複を排除）
     const months = new Set<string>();
@@ -228,14 +256,17 @@ async function syncFreeeAttendance(): Promise<number> {
             const records = await scrapeFreeeAttendance(y, m);
             allRecords.push(...records);
         } catch (e) {
-            console.error(
-                `[freee同期] ${y}年${m}月の取得に失敗:`,
-                e instanceof Error ? e.message : e
+            const message = e instanceof Error ? e.message : String(e);
+            console.error(`[freee同期] ${y}年${m}月の取得に失敗:`, message);
+            warnings.push(
+                `freee ${y}年${m}月の取得に失敗しました: ${message}`
             );
         }
     }
 
-    if (allRecords.length === 0) return 0;
+    if (allRecords.length === 0) {
+        return { created: 0, warnings };
+    }
 
     // 日付でインデックス化
     const recordByDate = new Map<string, FreeeAttendanceRecord>();
@@ -247,12 +278,18 @@ async function syncFreeeAttendance(): Promise<number> {
 
     // シフトとマッチしてEntry作成
     let created = 0;
+    const pendingDateKeys: string[] = [];
     for (const shift of pendingShifts) {
-        // シフトの日付をJSTベースで取得
-        const jstDate = new Date(
-            shift.startTime.getTime() + 9 * 60 * 60 * 1000
-        );
-        const dateKey = `${jstDate.getFullYear()}-${String(jstDate.getMonth() + 1).padStart(2, "0")}-${String(jstDate.getDate()).padStart(2, "0")}`;
+        if (shift.entry) {
+            await prisma.shift.update({
+                where: { id: shift.id },
+                data: { entryStatus: "COMPLETED" },
+            });
+            continue;
+        }
+
+        const dateKey = `${shift.startTime.getFullYear()}-${String(shift.startTime.getMonth() + 1).padStart(2, "0")}-${String(shift.startTime.getDate()).padStart(2, "0")}`;
+        pendingDateKeys.push(dateKey);
 
         const record = recordByDate.get(dateKey);
         if (!record || !record.clockIn || !record.clockOut) continue;
@@ -316,5 +353,14 @@ async function syncFreeeAttendance(): Promise<number> {
         created++;
     }
 
-    return created;
+    if (created === 0) {
+        warnings.push(
+            "freee勤怠は取得できましたが、未入力シフトと一致する日付がありませんでした"
+        );
+        warnings.push(
+            `pending=${pendingDateKeys.join(", ")} / extracted=${[...recordByDate.keys()].sort().join(", ")}`
+        );
+    }
+
+    return { created, warnings };
 }
