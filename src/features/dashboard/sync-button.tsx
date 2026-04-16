@@ -29,6 +29,9 @@ export function SyncButton() {
             if (result.freeeEntries) {
                 parts.push(`freee ${result.freeeEntries}件自動入力`);
             }
+            if (result.warnings?.length) {
+                parts.push(result.warnings.join(" / "));
+            }
             setMessage(`同期完了: ${parts.join("、")}`);
             router.refresh();
         } else {

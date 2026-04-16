@@ -59,10 +59,27 @@ export async function scrapeFreeeAttendance(
             timeout: 30000,
         });
 
-        // SPAの描画を待つ
+        // SPAの描画と勤怠一覧のロードを待つ
+        await page.waitForFunction(
+            () => document.body.innerText.trim().length > 0,
+            { timeout: 15000 }
+        );
         await new Promise((r) => setTimeout(r, 5000));
 
         const records = await extractAttendanceData(page, year, month);
+        if (records.length === 0) {
+            const preview = await page.evaluate(() =>
+                document.body.innerText
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .slice(0, 30)
+                    .join(" | ")
+            );
+            throw new Error(
+                `freee勤怠データを抽出できませんでした (${year}年${month}月, url=${page.url()}, preview=${preview})`
+            );
+        }
         console.log(`[freee] ${year}年${month}月: ${records.length}件取得`);
 
         return records;
@@ -104,40 +121,95 @@ async function extractAttendanceData(
     month: number
 ): Promise<FreeeAttendanceRecord[]> {
     const bodyText = await page.evaluate(() => document.body.innerText);
+    return parseAttendanceText(bodyText, year, month);
+}
 
+function parseAttendanceText(
+    bodyText: string,
+    year: number,
+    month: number
+): FreeeAttendanceRecord[] {
     const records: FreeeAttendanceRecord[] = [];
+    const seenDates = new Set<string>();
 
-    // 「日(数字)\n...\nHH:MM 〜 HH:MM」のパターンを探す
-    // ページテキストの各行を解析
-    const lines = bodyText.split("\n").map((l) => l.trim());
+    const allLines = bodyText.split("\n").map((l) => l.trim());
+    const startIndex = Math.max(
+        0,
+        allLines.findIndex((line) => line.includes("日次データ出力"))
+    );
+    const lines = allLines.slice(startIndex);
+    const timeRangePattern = /(\d{1,2}:\d{2})\s*[〜~\-]\s*(\d{1,2}:\d{2})/;
+    const dateTimeSameLinePattern = new RegExp(
+        `(?:${month}[\\\\/]\\s*|${month}月\\s*)?(\\d{1,2})(?:日)?(?:\\s*\\([^)]*\\))?\\s+(\\d{1,2}:\\d{2})\\s*[〜~\\-]\\s*(\\d{1,2}:\\d{2})`
+    );
+    const dayLinePatterns = [
+        new RegExp(`^${month}[\\\\/]\\s*(\\d{1,2})$`),
+        new RegExp(`^${month}月\\s*(\\d{1,2})日?$`),
+        /^(\d{1,2})日$/,
+        /^(\d{1,2})\s*\([^)]*\)$/,
+        /^(\d{1,2})$/,
+    ];
+
+    const pushRecord = (day: number, clockIn: string, clockOut: string) => {
+        const monthStr = String(month).padStart(2, "0");
+        const dayStr = String(day).padStart(2, "0");
+        const date = `${year}-${monthStr}-${dayStr}`;
+        if (seenDates.has(date)) return;
+        seenDates.add(date);
+        records.push({
+            date,
+            clockIn,
+            clockOut,
+            breakStart: null,
+            breakEnd: null,
+        });
+    };
 
     let currentDay: number | null = null;
+    let remainingLinesForDay = 0;
     for (const line of lines) {
-        // 日付行: 1〜31の数字のみ
-        const dayMatch = line.match(/^(\d{1,2})$/);
-        if (dayMatch) {
-            const d = parseInt(dayMatch[1], 10);
-            if (d >= 1 && d <= 31) {
-                currentDay = d;
+        const dateTimeSameLineMatch = line.match(dateTimeSameLinePattern);
+        if (dateTimeSameLineMatch) {
+            const day = parseInt(dateTimeSameLineMatch[1], 10);
+            if (day >= 1 && day <= 31) {
+                pushRecord(
+                    day,
+                    dateTimeSameLineMatch[2],
+                    dateTimeSameLineMatch[3]
+                );
+                currentDay = null;
                 continue;
             }
         }
 
-        // 時刻行: "HH:MM 〜 HH:MM" パターン
+        let matchedDay: number | null = null;
+        for (const pattern of dayLinePatterns) {
+            const match = line.match(pattern);
+            if (match) {
+                const d = parseInt(match[1], 10);
+                if (d >= 1 && d <= 31) {
+                    matchedDay = d;
+                    break;
+                }
+            }
+        }
+        if (matchedDay !== null) {
+            currentDay = matchedDay;
+            remainingLinesForDay = 3;
+            continue;
+        }
+
         if (currentDay !== null) {
-            const timeMatch = line.match(
-                /(\d{1,2}:\d{2})\s*[〜~]\s*(\d{1,2}:\d{2})/
-            );
+            const timeMatch = line.match(timeRangePattern);
             if (timeMatch) {
-                const monthStr = String(month).padStart(2, "0");
-                const dayStr = String(currentDay).padStart(2, "0");
-                records.push({
-                    date: `${year}-${monthStr}-${dayStr}`,
-                    clockIn: timeMatch[1],
-                    clockOut: timeMatch[2],
-                    breakStart: null,
-                    breakEnd: null,
-                });
+                pushRecord(currentDay, timeMatch[1], timeMatch[2]);
+                currentDay = null;
+                remainingLinesForDay = 0;
+                continue;
+            }
+
+            remainingLinesForDay -= 1;
+            if (remainingLinesForDay <= 0) {
                 currentDay = null;
             }
         }
