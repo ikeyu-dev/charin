@@ -41,20 +41,24 @@ export function timeToMinutes(time: string): number {
  * @param clockOut - 退勤時刻 "HH:MM"
  * @param breakStart - 休憩開始時刻 "HH:MM"（任意）
  * @param breakEnd - 休憩終了時刻 "HH:MM"（任意）
+ * @param breakMins - 休憩分数（任意、breakStart/breakEnd が無い場合に使用）
  * @returns 実働時間（分）
  */
 export function calcWorkMinutes(
     clockIn: string,
     clockOut: string,
     breakStart?: string,
-    breakEnd?: string
+    breakEnd?: string,
+    breakMins?: number
 ): number {
     const totalMinutes = timeToMinutes(clockOut) - timeToMinutes(clockIn);
     let breakMinutes = 0;
-    if (breakStart && breakEnd) {
+    if (breakMins != null) {
+        breakMinutes = breakMins;
+    } else if (breakStart && breakEnd) {
         breakMinutes = timeToMinutes(breakEnd) - timeToMinutes(breakStart);
     }
-    return totalMinutes - breakMinutes;
+    return Math.max(0, totalMinutes - breakMinutes);
 }
 
 /** 深夜時間帯の境界（分） */
@@ -106,6 +110,8 @@ export function calcLateNightMinutes(
         late -=
             overlapMinutes(bStart, bEnd, 0, LATE_NIGHT_EARLY_END) +
             overlapMinutes(bStart, bEnd, LATE_NIGHT_START, LATE_NIGHT_NEXT_END);
+    } else if (breakMins != null) {
+        late -= breakMins;
     }
 
     return Math.max(0, late);
