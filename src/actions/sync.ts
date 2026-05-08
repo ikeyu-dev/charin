@@ -258,9 +258,7 @@ async function syncFreeeAttendance(): Promise<FreeeSyncResult> {
         } catch (e) {
             const message = e instanceof Error ? e.message : String(e);
             console.error(`[freee同期] ${y}年${m}月の取得に失敗:`, message);
-            warnings.push(
-                `freee ${y}年${m}月の取得に失敗しました: ${message}`
-            );
+            warnings.push(`freee ${y}年${m}月の取得に失敗しました: ${message}`);
         }
     }
 
@@ -298,14 +296,16 @@ async function syncFreeeAttendance(): Promise<FreeeSyncResult> {
             record.clockIn,
             record.clockOut,
             record.breakStart ?? undefined,
-            record.breakEnd ?? undefined
+            record.breakEnd ?? undefined,
+            record.breakMinutes ?? undefined
         );
 
         const lateNightMinutes = calcLateNightMinutes(
             record.clockIn,
             record.clockOut,
             record.breakStart ?? undefined,
-            record.breakEnd ?? undefined
+            record.breakEnd ?? undefined,
+            record.breakMinutes ?? undefined
         );
 
         let income: number | null = null;
@@ -318,7 +318,9 @@ async function syncFreeeAttendance(): Promise<FreeeSyncResult> {
         }
 
         let breakMinutes: number | null = null;
-        if (record.breakStart && record.breakEnd) {
+        if (record.breakMinutes != null) {
+            breakMinutes = record.breakMinutes;
+        } else if (record.breakStart && record.breakEnd) {
             breakMinutes =
                 timeToMinutes(record.breakEnd) -
                 timeToMinutes(record.breakStart);
